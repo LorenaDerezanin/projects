@@ -13,12 +13,11 @@ output: html_document
 
 # load packages
 library(tinytex)
+library(tidyverse)
 library(knitr)
 library(stringi)
 library(data.table)
-library(dplyr)
 #library(datasets)
-library(ggplot2)
 
 # read BFF table
 file_BFF <- "busco_reports/full_table_mustela_nigripes.v2.sm.tsv"
@@ -196,40 +195,31 @@ uniq_buscos_DF <- anti_join(ortho_match_DF, ortho_match_BFF, by = c('Busco_id', 
 ``` {r count_buscos}
 
 # declare function 
-count_buscos <- function(datfr){
+count_buscos <- function(datfr, type){
   return(datfr %>%
            group_by(Status) %>%
-           count(Status))
+           count(Status)) %>%
+           mutate(Type = type) %>%
+           select(Type, everything())
 }
 
 
-# create table with counts 
-buscos_counts <- count_buscos(shared_buscos_ferrets) %>%
-  mutate(Type = "Shared") %>%  
-  select(Type, everything())
-
-
-# count and append uniq buscos to counts table
-count_buscos(uniq_buscos_BFF) %>%
-                  mutate(Type = "Unique_BFF") %>%
-                  select(Type, everything()) %>%
-                  bind_rows(buscos_counts,~)  ### ???? add as 2nd arg somehow
-  
-count_buscos(uniq_buscos_DF) %>%
-                 mutate(Type = "Unique_DF") %>%
-                 select(Type, everything()) %>%
-                 bind_rows(buscos_counts)
-  
-# example
-uniq_counts_ferrets <- bind_rows(counts_uniq_BFF, counts_uniq_DF)
-
+# count and bind shared and unique buscos in one table
+buscos_counts <- bind_rows(
+                 count_buscos(shared_buscos_ferrets, "Shared"),
+                 count_buscos(uniq_buscos_BFF, "Unique_BFF"),
+                 count_buscos(uniq_buscos_DF, "Unique_DF")
+)
+                  
 ```
 
 
+#### Plot shared and unique BUSCOs
 
-```{r plot uniq_buscos}
+```{r shared_uniq_buscos_plot}
 
 # plot all counts as 1 barplot
+buscos_counts
 
 uniq_counts_ferrets %>%
   group_by(Type) %>%
