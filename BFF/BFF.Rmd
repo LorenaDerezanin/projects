@@ -219,15 +219,13 @@ buscos_counts <- bind_rows(
 ```{r shared_uniq_buscos_plot}
 
 # plot all counts as 1 barplot
-buscos_counts
-
-uniq_counts_ferrets %>%
+buscos_counts %>%
   group_by(Type) %>%
   ggplot(aes(x = Status, y = n, fill = factor(Type))) +
   geom_bar(stat = "Identity", position = "dodge") +
   scale_fill_grey(name = "Species",
-                  labels = c("Mustela nigripes", "Mustela putorius furo")) +
-  labs(title = "BUSCOs unique for each ferret genome assembly",
+                  labels = c("Shared BUSCOs","Unique - M.nigripes", "Unique - M.putorius furo")) +
+  labs(title = "BUSCOs shared and unique for each ferret genome assembly",
        x = "BUSCO gene status", y = "Number of BUSCOs") +
   theme_light() +
   theme(axis.title.x = element_text(size = 12, vjust = -0.90),
@@ -236,60 +234,31 @@ uniq_counts_ferrets %>%
     theme(plot.title = element_text(size = 14,
           margin = margin(0, 0, 6, 0)))
 
-# save barplot
-ggsave("Ferrets_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)  
-
-```
-
-
-
-```{r plot_shared_buscos}
-
-# plot shared buscos
-shared_buscos_ferrets %>%
-  group_by(Status) %>%
-  count(Status) %>%
-  ggplot(aes(x = Status, y = n)) +
-    geom_bar(stat = "identity") +
-    scale_fill_grey() +
-    labs(title = "BUSCOs shared in both ferret genome assemblies",
-         x = "BUSCO gene status", y = "Number of BUSCOs") +
-    theme_light() +
-    theme(axis.title.x = element_text(size = 12, vjust = -0.90),
-          axis.title.y = element_text(size = 12, vjust = 1.90)) +
-    theme(plot.title = element_text(size = 14,
-          margin = margin(0, 0, 6, 0)))
-  
 
 # save barplot
-ggsave("Ferrets_shared_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)
+ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)  
 
 ```
 
-
-
-```{r}
-# subset duplicated, more than 2 gene copies
-match_BFF_dup_more_than2_copies <- match_BFF_duplicated_genes %>% group_by(Busco_id) %>% filter(n() > 2)
-
-```
 
 
 ```{r duplicates}
-## Subset genes with more than 2 copies
-BFF_more_than_2_copies <- BFF_duplicated_genes %>% group_by(Busco_id) %>% filter(n() > 2)
 
-## Subset genes with more than 2 copies
-DF_more_than_2_copies <- DF_duplicated_genes %>% group_by(Busco_id) %>% filter(n() > 2)
+# subset buscos with more than 2 gene copies
+BFF_dup_more_than2_copies <- full_table_BFF %>% group_by(Busco_id) %>% filter(n() > 2)
+DF_dup_more_than2_copies <- full_table_DF %>% group_by(Busco_id) %>% filter(n() > 2)
+
+
+
 
 ```
 
 
-
-# move mammalia ortho at the top of the script
-## run busco on cat,dog,human ref genomes
-## get orthologs for cat, dog, human
+## check shared/unique genes - GO
+## analyze duplicates
+## run busco on cat,dog
+## get orthologs for cat, dog
 ## compare with ferrets
-## bar plot results for each gene set for each sp together, overlapping and unique separately
+## bar plot results for each gene set for each sp together, shared/unique separately - package patchwork
 
 
