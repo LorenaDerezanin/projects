@@ -242,13 +242,18 @@ ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 3
 
 
 
-```{r duplicates}
+```{r busco_duplicates}
+
+# filter out duplicated buscos in both species
+BFF_duplicates <- ortho_match_BFF %>% group_by(Status) %>% filter(Status=="Duplicated")
+DF_duplicates <- ortho_match_DF %>% group_by(Status) %>% filter(Status=="Duplicated")
+
 
 # subset buscos with more than 2 gene copies
-BFF_dup_more_than2_copies <- full_table_BFF %>% group_by(Busco_id) %>% filter(n() > 2)
-DF_dup_more_than2_copies <- full_table_DF %>% group_by(Busco_id) %>% filter(n() > 2)
+BFF_dup_more_than2_copies <- ortho_match_BFF %>% group_by(Busco_id) %>% filter(n() > 2)
+DF_dup_more_than2_copies <- ortho_match_DF %>% group_by(Busco_id) %>% filter(n() > 2)
 
-
+ 
 
 
 ```
