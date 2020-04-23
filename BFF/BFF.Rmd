@@ -169,7 +169,7 @@ ortho_match_DF <- ferrets_orthodb_match %>%
 # semi join tables by the same BUSCO ID for each status
 # semi_join returns rows in 1st table that are matching rows in 2nd table based on given args
 shared_buscos_ferrets <- semi_join(ortho_match_BFF, ortho_match_DF, by = c('Busco_id', 'Status')) %>%
-                         select(Busco_id, Status, Description, BiologicalProcesses)
+                            select(Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
@@ -181,11 +181,11 @@ shared_buscos_ferrets <- semi_join(ortho_match_BFF, ortho_match_DF, by = c('Busc
 # anti_join returns rows in 1st table that have no match in 2nd table based on given args 
 # unique buscos in BFF
 uniq_buscos_BFF <- anti_join(ortho_match_BFF, ortho_match_DF, by = c('Busco_id', 'Status')) %>%
-                   select(Species, Busco_id, Status, Description, BiologicalProcesses)
+                      select(Species, Busco_id, Status, Description, BiologicalProcesses)
 
 # unique buscos in DF
 uniq_buscos_DF <- anti_join(ortho_match_DF, ortho_match_BFF, by = c('Busco_id', 'Status')) %>%
-                  select(Species,Busco_id, Status, Description, BiologicalProcesses)
+                     select(Species,Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
@@ -245,22 +245,56 @@ ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 3
 ```{r busco_duplicates}
 
 # filter out duplicated buscos in both species
-BFF_duplicates <- ortho_match_BFF %>% group_by(Status) %>% filter(Status=="Duplicated")
-DF_duplicates <- ortho_match_DF %>% group_by(Status) %>% filter(Status=="Duplicated")
+BFF_duplicates <- ortho_match_BFF %>% filter(Status == "Duplicated")
+DF_duplicates <- ortho_match_DF %>% filter(Status == "Duplicated")
+
+# shared duplicates in both species, regardless of the exact number of duplicates in each sp
+shared_dups <- semi_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
+                  select(Busco_id, Status, Description, BiologicalProcesses)
+
+# unique dups in BFF
+uniq_dups_BFF <- anti_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
+                   select(Species, Busco_id, Status, Description, BiologicalProcesses)
+
+# unique dups in DF
+uniq_dups_DF <- anti_join(DF_duplicates, BFF_duplicates, by = 'Busco_id') %>%
+                  select(Species,Busco_id, Status, Description, BiologicalProcesses)
+
+
+# declare function for counting duplicates
+count_dups <- function(datfr, type){
+  return(datfr %>%
+           group_by(Busco_id) %>%
+           count(Busco_id)) %>%
+           mutate(Type = type) %>%
+           select(Type, everything())
+}
+
+
+# count and bind shared and unique buscos in one table
+buscos_dups <- bind_rows(
+                 count_dups(shared_dups, "Shared_dups"),
+                 count_dups(uniq_dups_BFF, "Unique_BFF_dups"),
+                 count_dups(uniq_dups_DF, "Unique_D_dups")
+)
+
+# plot shared/uniq duplicates for both species
+
+
 
 
 # subset buscos with more than 2 gene copies
-BFF_dup_more_than2_copies <- ortho_match_BFF %>% group_by(Busco_id) %>% filter(n() > 2)
-DF_dup_more_than2_copies <- ortho_match_DF %>% group_by(Busco_id) %>% filter(n() > 2)
+BFF_dup_more_than2_copies <- BFF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
+DF_dup_more_than2_copies <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
 
- 
 
 
 ```
 
 
-## check shared/unique genes - GO
-## analyze duplicates
+## check shared/unique genes - GO terms
+## analyze duplicates - done
+## analyze missing buscos
 ## run busco on cat,dog
 ## get orthologs for cat, dog
 ## compare with ferrets
