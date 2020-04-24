@@ -192,7 +192,7 @@ uniq_buscos_DF <- anti_join(ortho_match_DF, ortho_match_BFF, by = c('Busco_id', 
 
 #### Count shared and unique BUSCOs
 
-``` {r count_buscos}
+``` {r count_shared_uniq_buscos}
 
 # declare function 
 count_buscos <- function(datfr, type){
@@ -216,7 +216,7 @@ buscos_counts <- bind_rows(
 
 #### Plot shared and unique BUSCOs
 
-```{r shared_uniq_buscos_plot}
+``` {r shared_uniq_buscos_plot}
 
 # plot all counts as 1 barplot
 buscos_counts %>%
@@ -241,8 +241,9 @@ ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 3
 ```
 
 
+### Duplicated BUSCOs in both species
 
-```{r busco_duplicates}
+``` {r shared_busco_duplicates}
 
 # filter out duplicated buscos in both species
 BFF_duplicates <- ortho_match_BFF %>% filter(Status == "Duplicated")
@@ -252,6 +253,13 @@ DF_duplicates <- ortho_match_DF %>% filter(Status == "Duplicated")
 shared_dups <- semi_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
                   select(Busco_id, Status, Description, BiologicalProcesses)
 
+```
+
+
+#### Unique duplicates in both species 
+
+``` {r unique_duplicates}
+
 # unique dups in BFF
 uniq_dups_BFF <- anti_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
                    select(Species, Busco_id, Status, Description, BiologicalProcesses)
@@ -260,6 +268,12 @@ uniq_dups_BFF <- anti_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
 uniq_dups_DF <- anti_join(DF_duplicates, BFF_duplicates, by = 'Busco_id') %>%
                   select(Species,Busco_id, Status, Description, BiologicalProcesses)
 
+```
+
+
+#### Count shared/unique duplicates 
+
+``` {r count_dups}
 
 # declare function for counting duplicates
 count_dups <- function(datfr, type){
@@ -270,22 +284,52 @@ count_dups <- function(datfr, type){
            select(Type, everything())
 }
 
-
-# count and bind shared and unique buscos in one table
+# count and bind shared and unique dups in one table
 buscos_dups <- bind_rows(
                  count_dups(shared_dups, "Shared_dups"),
                  count_dups(uniq_dups_BFF, "Unique_BFF_dups"),
-                 count_dups(uniq_dups_DF, "Unique_D_dups")
+                 count_dups(uniq_dups_DF, "Unique_DF_dups")
 )
 
-# plot shared/uniq duplicates for both species
+```
+
+#### Plot shared/unique duplicates 
+
+``` {r plot_dups}
+
+# plot all duplicates counts
+buscos_dups %>%
+  summarize_at("Busco_id", count) #%>%
+  
+  ggplot(aes(x = Type, y = busco_num, fill = factor(Type))) +
+  geom_bar(stat = "Identity", position = "dodge") +
+  scale_fill_grey(name = "Species",
+                  labels = c("Shared duplicates","Unique - M.nigripes", "Unique - M.putorius furo")) +
+  labs(title = "Duplicated BUSCOs shared and unique for each ferret genome assembly",
+       x = "Type of duplicate", y = "Number of duplicates") +
+  theme_light() +
+  theme(axis.title.x = element_text(size = 12, vjust = -0.90),
+        axis.title.y = element_text(size = 12, vjust = 1.90),
+        legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
+    theme(plot.title = element_text(size = 14,
+          margin = margin(0, 0, 6, 0)))
+
+#  group_by(Type) %>%  
+# fill = factor(Type)
+
+# save barplot
+ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300)  
+
+```
 
 
+#### Analysis of the multiple duplicates
 
+``` {r more_than_2_dups}
 
-# subset buscos with more than 2 gene copies
-BFF_dup_more_than2_copies <- BFF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
-DF_dup_more_than2_copies <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
+# filter out buscos with more than 2 gene copies
+BFF_dup_more_than2_cp <- BFF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
+DF_dup_more_than2_cp <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
 
 
 
