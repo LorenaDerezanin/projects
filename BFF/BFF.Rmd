@@ -300,8 +300,8 @@ buscos_dups <- bind_rows(
 # plot all dups counts
 buscos_dups %>%
   group_by(Type) %>%
-  summarise(dups_frequency = sum(n)) %>%    # sum of all dups for each type(shared/unique)
-  ggplot(aes(x = Type, y = dups_frequency, fill = factor(Type))) +
+  summarise(dups_freq_sum = sum(n)) %>%    # sum of all dups for each type(shared/unique)
+  ggplot(aes(x = Type, y = dups_freq_sum, fill = factor(Type))) +
   geom_bar(stat = "Identity", position = "dodge") +
   scale_fill_grey(name = "Species",
                   labels = c("Shared duplicates","Unique - M.nigripes", "Unique - M.putorius furo")) +
@@ -320,8 +320,26 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 
 ```
 
+#### Identifying shared/unique duplicated genes
 
-#### Analysis of the multiple duplicates
+``` {r identification_of_dups}
+
+# check gene descritions of dups
+# find r pkg for GO terms and biol.processes analysis
+# semantic similarity analysis and word clouds
+# clusterProfiler: cnetplot function, enrichment map
+# pmcplot - query pubmed central for GO descriptions in publications, serves for other query types also
+
+
+
+
+
+```
+
+
+
+
+#### Analysis of multiple duplicates
 
 ``` {r more_than_2_dups}
 
@@ -333,13 +351,23 @@ DF_dup_more_than2_cp <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
 
 ```
 
-
+## replace geom_bar(stat=identity) with geom_col 
 ## analyze duplicates - done
 ## check shared/unique genes - GO terms
+
 ## analyze missing buscos
+
 ## run busco on cat,dog
 ## get GOs for cat,dog
 ## compare with ferrets
+
 ## bar plot results for each gene set for each sp together, shared/unique separately - package patchwork
 
+## fix plot colors:
+#  library(RColorBrewer)
+#  display.brewer.all()
+#  check theme_bw
+#  check theme_minimal
+#  theme(legend.position = "top")
+#  check fill parameter (does it need to be factored or is it by default)
 
