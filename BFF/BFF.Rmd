@@ -11,13 +11,16 @@ output: html_document
 
 ``` {r load_and_prep_BUSCO_reports}
 
+# initialize renv for a private pkg library and project reproducibility
+# renv::init()
+
 # load packages
 library(tinytex)
 library(tidyverse)
 library(knitr)
 library(stringi)
 library(data.table)
-#library(datasets)
+
 
 # read BFF table
 file_BFF <- "busco_reports/full_table_mustela_nigripes.v2.sm.tsv"
