@@ -15,11 +15,18 @@ output: html_document
 # renv::init()
 
 # load packages
+library(BiocManager)
+options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
+renv::install("GOSemSim")
+renv::install("AnnotationForge")
+library(GOSemSim)
+library(AnnotationForge)
+
+library(data.table)
 library(tinytex)
-library(tidyverse)
 library(knitr)
 library(stringi)
-library(data.table)
+library(tidyverse)
 
 
 # read BFF table
@@ -328,12 +335,11 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 ``` {r identification_of_dups}
 
 # check gene descritions of dups
-# find r pkg for GO terms and biol.processes analysis
-# semantic similarity analysis and word clouds
-# clusterProfiler: cnetplot function, enrichment map
-# pmcplot - query pubmed central for GO descriptions in publications, serves for other query types also
+# semantic similarity analysis between 2 GO term sets
+GOSemSim::mgoSim()
 
-
+# build dom.fer. and bff eg.db
+# transform biol. processes col into list of GO terms
 
 
 
