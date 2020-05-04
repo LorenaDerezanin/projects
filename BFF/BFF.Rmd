@@ -9,7 +9,7 @@ output: html_document
 #### BUSCO version: 3.0.2
 #### lineage dataset: mammalia_odb9 (created on: 2016-02-13), number of species: 50, number of BUSCOs: 4104
 
-``` {r load_and_prep_BUSCO_reports}
+``` {r renv_init_load_pkgs}
 
 # initialize renv for a private pkg library and project reproducibility
 # renv::init()
@@ -17,10 +17,10 @@ output: html_document
 # load packages
 library(BiocManager)
 options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
-renv::install("GOSemSim")
-renv::install("AnnotationForge")
-library(GOSemSim)
-library(AnnotationForge)
+# renv::install("GOSemSim")
+# renv::install("AnnotationForge")
+# library(GOSemSim)
+# library(AnnotationForge)
 
 library(data.table)
 library(tinytex)
@@ -28,6 +28,12 @@ library(knitr)
 library(stringi)
 library(tidyverse)
 
+```
+
+
+#### Read in data tables
+
+``` {r load_and_prep_BUSCO_reports}
 
 # read BFF table
 file_BFF <- "busco_reports/full_table_mustela_nigripes.v2.sm.tsv"
@@ -48,7 +54,7 @@ full_table_DF <- as.data.frame(fread(file_DF, sep = '\t', header = TRUE, fill = 
 ```
 
 
-### Plot number of BUSCOs for each species
+#### Plot number of BUSCOs for each species
 
 ``` {r count_genes_and_plot}
 
@@ -78,7 +84,7 @@ ggsave("Ferrets_all_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)
 ```
 
 
-### Plot BUSCOs per scaffold 
+#### Plot BUSCOs per scaffold 
 
 ``` {r count_genes_function}
 
@@ -335,8 +341,15 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 ``` {r identification_of_dups}
 
 # check gene descritions of dups
+# get GO.db
+BiocManager::install("GO.db")
+# transform ferrets GO ids to terms
+library(GO.db)
+
+
+
 # semantic similarity analysis between 2 GO term sets
-GOSemSim::mgoSim()
+# GOSemSim::mgoSim()
 
 # build dom.fer. and bff eg.db
 # transform biol. processes col into list of GO terms
