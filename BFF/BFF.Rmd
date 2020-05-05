@@ -336,23 +336,33 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 
 ```
 
+
 #### Identifying shared/unique duplicated genes
 
 ``` {r identification_of_dups}
 
 # check gene descritions of dups
 # get GO.db
-BiocManager::install("GO.db")
-# transform ferrets GO ids to terms
+# BiocManager::install("GO.db")
+
+# transform ferrets GO ids to terms = transform biol. processes col into list of GO terms
 library(GO.db)
 
+# join rows from mamm..db9 to buscos_dups by matches in busco_id col
+GO_buscos_dups <- left_join(buscos_dups, mammalia_orthodb9, by = 'Busco_id') %>%
+                   dplyr::select(-ProtMedianLength)  # drop col
+                  # explicitly called dplyr::select cause it's masked by other pkg's select fun
+
+# call GO.db fun to identify GO IDs
 
 
-# semantic similarity analysis between 2 GO term sets
-# GOSemSim::mgoSim()
 
-# build dom.fer. and bff eg.db
-# transform biol. processes col into list of GO terms
+
+# count NAs per col 
+GO_buscos_dups %>% is.na() %>% colSums()
+
+# filter out rows with NAs (missing GO IDs)
+no_GO_IDs_dups <- GO_buscos_dups %>% filter_all(any_vars(is.na(.))) 
 
 
 
@@ -379,7 +389,10 @@ DF_dup_more_than2_cp <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
 
 ## analyze missing buscos
 
-## run busco on cat,dog
+## check proteinmedianlengths for fragmented and missing buscos
+# are these genes much larger and more complex than usual 'completed' gene
+
+## run new busco on cat,dog + ferrets
 ## get GOs for cat,dog
 ## compare with ferrets
 
