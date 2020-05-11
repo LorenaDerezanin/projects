@@ -27,6 +27,7 @@ library(tinytex)
 library(knitr)
 library(stringi)
 library(tidyverse)
+library(RColorBrewer)
 
 ```
 
@@ -341,8 +342,7 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 
 ``` {r identification_of_dups}
 
-# check gene descritions of dups
-# get GO.db
+# check gene descriptions of dups
 # BiocManager::install("GO.db")
 
 # transform ferrets GO ids to terms = transform biol. processes col into list of GO terms
@@ -354,7 +354,40 @@ GO_buscos_dups <- left_join(buscos_dups, mammalia_orthodb9, by = 'Busco_id') %>%
                   # explicitly called dplyr::select cause it's masked by other pkg's select fun
 
 # call GO.db fun to identify GO IDs
+# keys = GO IDs
+# test it with default keys
+test_keys <-head(keys(GO.db))
+select(GO.db, keys=test_keys, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
 
+split_processes <- GO_buscos_dups %>%
+  drop_na(BiologicalProcesses) %>%    # dropping rows with NAs in biol.processes
+  mutate_at(c("BiologicalProcesses"), function(processes) str_split(processes, ";"))  # transform string of GO IDs into chr vector
+        # mutate_at requires c() despite using only 1 var here
+
+test_3000 <- c("GO:0006508", "GO:0006509", "GO:0007155", "GO:0007160", "GO:0007179", "GO:0010042", "GO:0030216", "GO:0033627", "GO:0033630", "GO:0033631", "GO:0034241", "GO:0034612", "GO:0042117", "GO:0042542", "GO:0050714", "GO:0051044", "GO:0051088", "GO:0051384", "GO:0051549", "GO:0051592", "GO:0071222")
+test3000_out <- select(GO.db, keys=test_3000, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+
+
+
+
+GO_def_added <- split_processes %>%
+  mutate(go_db = select(GO.db, keys=split_processes$BiologicalProcesses, columns = c("TERM", "ONTOLOGY", "DEFINITION")))
+
+
+
+
+no_flatten <- GO_buscos_dups$BiologicalProcesses %>% map(function(x) str_split(x,";")) # %>% flatten()
+flatten <- GO_buscos_dups$BiologicalProcesses %>% map(function(x) str_split(x,";")) %>% flatten() %>% flatten() %>% unlist()
+
+dude2 <- select(GO.db, keys=flatten, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+
+
+
+
+# test it with my GO IDS for ADAM gene
+adam_keys <- c("GO:0006508", "GO:0006509", "GO:0007155", "GO:0007160", "GO:0007179", "GO:0010042", "GO:0030216", "GO:0033627", "GO:0033630", "GO:0033631", "GO:0034241", "GO:0034612", "GO:0042117", "GO:0042542", "GO:0050714", "GO:0051044", "GO:0051088", "GO:0051384", "GO:0051549", "GO:0051592", "GO:0071222")
+
+select(GO.db, keys=adam_keys, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
 
 
 
@@ -367,8 +400,6 @@ no_GO_IDs_dups <- GO_buscos_dups %>% filter_all(any_vars(is.na(.)))
 
 
 ```
-
-
 
 
 #### Analysis of multiple duplicates
