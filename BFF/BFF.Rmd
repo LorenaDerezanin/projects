@@ -13,6 +13,7 @@ output: html_document
 
 # initialize renv for a private pkg library and project reproducibility
 # renv::init()
+renv::activate()
 
 # load packages
 library(BiocManager)
@@ -25,6 +26,7 @@ options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
 library(data.table)
 library(tinytex)
 library(knitr)
+#renv::install("stringi")
 library(stringi)
 library(tidyverse)
 library(RColorBrewer)
@@ -364,30 +366,17 @@ split_processes <- GO_buscos_dups %>%
   mutate_at(c("BiologicalProcesses"), function(processes) str_split(processes, ";"))  # transform string of GO IDs into chr vector
         # mutate_at requires c() despite using only 1 var here
 
-test_3000 <- c("GO:0006508", "GO:0006509", "GO:0007155", "GO:0007160", "GO:0007179", "GO:0010042", "GO:0030216", "GO:0033627", "GO:0033630", "GO:0033631", "GO:0034241", "GO:0034612", "GO:0042117", "GO:0042542", "GO:0050714", "GO:0051044", "GO:0051088", "GO:0051384", "GO:0051549", "GO:0051592", "GO:0071222")
-test3000_out <- select(GO.db, keys=test_3000, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+unnested <- split_processes %>% 
+            unnest() %>% 
+            dplyr::rename(GOID = "BiologicalProcesses")
+
+goterm_definitions <- select(GO.db, keys=unnested$GOID, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+
+final_go_table <- left_join(unnested, goterm_definitions, by = "GOID") %>% distinct()
 
 
-
-
-GO_def_added <- split_processes %>%
-  mutate(go_db = select(GO.db, keys=split_processes$BiologicalProcesses, columns = c("TERM", "ONTOLOGY", "DEFINITION")))
-
-
-
-
-no_flatten <- GO_buscos_dups$BiologicalProcesses %>% map(function(x) str_split(x,";")) # %>% flatten()
-flatten <- GO_buscos_dups$BiologicalProcesses %>% map(function(x) str_split(x,";")) %>% flatten() %>% flatten() %>% unlist()
-
-dude2 <- select(GO.db, keys=flatten, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
-
-
-
-
-# test it with my GO IDS for ADAM gene
-adam_keys <- c("GO:0006508", "GO:0006509", "GO:0007155", "GO:0007160", "GO:0007179", "GO:0010042", "GO:0030216", "GO:0033627", "GO:0033630", "GO:0033631", "GO:0034241", "GO:0034612", "GO:0042117", "GO:0042542", "GO:0050714", "GO:0051044", "GO:0051088", "GO:0051384", "GO:0051549", "GO:0051592", "GO:0071222")
-
-select(GO.db, keys=adam_keys, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+#GO_def_added <- split_processes %>%
+#  mutate(go_db = select(GO.db, keys=split_processes$BiologicalProcesses, columns = c("TERM", "ONTOLOGY", "DEFINITION")))
 
 
 
