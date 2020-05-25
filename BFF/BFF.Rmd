@@ -1,10 +1,14 @@
 ---
-title: "Analysis of the BUSCO reports for ferrets"
-author: "Lorena_Derezanin"
+title: "Analysis of the BUSCO reports - ferrets"
+author: "Lorena Derezanin"
 output: html_document
 ---
 
-## Black-footed ferret(BFF) and domestic ferret(DF) HiC assembly BUSCO-report analysis
+<br>
+
+### Black-footed ferret (BFF) and domestic ferret (DF) Hi-C assembly BUSCO report analysis
+
+<br>
 
 #### BUSCO version: 3.0.2
 #### lineage dataset: mammalia_odb9 (created on: 2016-02-13), number of species: 50, number of BUSCOs: 4104
@@ -13,7 +17,7 @@ output: html_document
 
 # initialize renv for a private pkg library and project reproducibility
 # renv::init()
-renv::activate()
+# renv::activate()
 
 # load packages
 library(BiocManager)
@@ -33,6 +37,7 @@ library(RColorBrewer)
 
 ```
 
+<br>
 
 #### Read in data tables
 
@@ -41,21 +46,24 @@ library(RColorBrewer)
 # read BFF table
 file_BFF <- "busco_reports/full_table_mustela_nigripes.v2.sm.tsv"
 full_table_BFF <- as.data.frame(fread(file_BFF, sep = '\t', header = TRUE, fill = TRUE, skip = 4)) %>% 
-                  rename( Busco_id = '# Busco id') %>%
+                  dplyr::rename(Busco_id = "# Busco id") %>%
                   mutate(Species = 'Mustela nigripes') %>%   # create new col with species name
-                  select(Species, everything())    # move new col in front of the other cols
+                  dplyr::select(Species, everything())    # move new col in front of the other cols
+                  # explicitly called dplyr::select cause it's masked by Annnot_dbi pkg select fun
+
 # summary(full_table_BFF)
 
 # read DF table
 file_DF <- "busco_reports/full_table_mustela_p_furo_fem_HiC.tsv"
 full_table_DF <- as.data.frame(fread(file_DF, sep = '\t', header = TRUE, fill = TRUE, skip = 4)) %>% 
-                 rename( Busco_id = '# Busco id') %>%
+                 dplyr::rename(Busco_id = "# Busco id") %>%
                  mutate(Species = 'Mustela putorius furo') %>%
-                 select(Species, everything())
+                 dplyr::select(Species, everything())
 # summary(full_table_DF)
 
 ```
 
+<br>
 
 #### Plot number of BUSCOs for each species
 
@@ -70,7 +78,7 @@ ferrets %>%
   count(Status) %>%
   ggplot(aes(x = Status, y = n, fill = factor(Species))) +
     geom_bar(stat = "identity", position = "dodge") +
-    scale_fill_grey(name = "Species", 
+    scale_fill_brewer(palette = "Dark2", direction = -1, name = "Species", 
                     labels = c("Mustela nigripes", "Mustela putorius furo")) +
     labs(title = "BUSCOs found in black-footed ferret and domestic ferret genome assemblies",
          x = "BUSCO gene status", y = "Number of BUSCOs") +
@@ -86,6 +94,7 @@ ggsave("Ferrets_all_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)
 
 ```
 
+<br>
 
 #### Plot BUSCOs per scaffold 
 
@@ -102,6 +111,7 @@ count_gene_occurencies_on_scfs <- function(datfr){
 
 ```
 
+<br>
 
 #### Plot BUSCOs per scf - BFF
 
@@ -112,7 +122,7 @@ full_table_BFF %>%
   count_gene_occurencies_on_scfs() %>%
   ggplot(aes(x = reorder(Contig, n), y = n, fill = Status)) +   # reordering - scaffolds with most genes on top
     geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-    scale_fill_grey() +
+    scale_fill_brewer(palette = "Dark2", direction = -1) +
     coord_flip() +
     labs(title = "BUSCOs found in black-footed ferret scaffolds", 
          x = "Scaffold ID", y = "Number of BUSCOs") +
@@ -128,6 +138,7 @@ ggsave("BFF_BUSCOs_per_scf_barplot.png", width = 16, height = 9, dpi = 300)
   
 ```
 
+<br>
 
 #### Plot BUSCOs per scf - DF
 
@@ -138,7 +149,7 @@ full_table_DF %>%
   count_gene_occurencies_on_scfs() %>%
   ggplot(aes(x = reorder(Contig, n), y = n, fill = Status)) +  
     geom_bar(stat = "identity", position = "dodge", width = 0.8) +
-    scale_fill_grey() +
+    scale_fill_brewer(palette = "Dark2", direction = -1) +
     coord_flip() +
     labs(title = "BUSCOs found in domestic ferret scaffolds", 
          x = "Scaffold ID", y = "Number of BUSCOs") +
@@ -154,16 +165,17 @@ ggsave("DF_BUSCOs_per_scf_barplot.png", width = 16, height = 9, dpi = 300)
 
 ```
 
+<br>
 
-## Identify shared BUSCOs in both ferret species and unique sets for each species
+#### Identify shared BUSCOs in both ferret species and unique sets for each species
 
 ``` {r join_ferrets_and_orthodb}
 
 # read BUSCO mammalia ortho db with GO terms, protein descriptions,...
 file_orthodb <- "mammalia_40674_OrthoDB9_orthogroup_info.txt"
 mammalia_orthodb9 <- as.data.frame(read.delim(file_orthodb, sep = '\t', header = TRUE, fill = TRUE)) %>%
-                     select(OrthoGroupID, Description, ProtMedianLength, BiologicalProcesses) %>% 
-                     rename(Busco_id = OrthoGroupID) # renaming col to enable matching by the same values
+                     dplyr::select(OrthoGroupID, Description, ProtMedianLength, BiologicalProcesses) %>% 
+                     dplyr::rename(Busco_id = OrthoGroupID) # renaming col to enable matching by the same values
 # summary(mammalia_orthodb9)
 
 # join orthologs in mammalia db and ferrets based on BUSCO ID, sort by status
@@ -172,8 +184,9 @@ ferrets_orthodb_match <- left_join(ferrets, mammalia_orthodb9, by = 'Busco_id') 
   
 ```
 
+<br>
 
-### BUSCOs shared in both ferret species
+#### BUSCOs shared in both ferret species
 
 ``` {r get_busco_overlaps_in_both_sp}
 
@@ -188,26 +201,28 @@ ortho_match_DF <- ferrets_orthodb_match %>%
 # semi join tables by the same BUSCO ID for each status
 # semi_join returns rows in 1st table that are matching rows in 2nd table based on given args
 shared_buscos_ferrets <- semi_join(ortho_match_BFF, ortho_match_DF, by = c('Busco_id', 'Status')) %>%
-                            select(Busco_id, Status, Description, BiologicalProcesses)
+                            dplyr::select(Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
+<br>
 
-### BUSCOs unique for each ferret species
+#### BUSCOs unique for each ferret species
 
 ``` {r get_unique_buscos_for_each_sp}
 
 # anti_join returns rows in 1st table that have no match in 2nd table based on given args 
 # unique buscos in BFF
 uniq_buscos_BFF <- anti_join(ortho_match_BFF, ortho_match_DF, by = c('Busco_id', 'Status')) %>%
-                      select(Species, Busco_id, Status, Description, BiologicalProcesses)
+                      dplyr::select(Species, Busco_id, Status, Description, BiologicalProcesses)
 
 # unique buscos in DF
 uniq_buscos_DF <- anti_join(ortho_match_DF, ortho_match_BFF, by = c('Busco_id', 'Status')) %>%
-                     select(Species,Busco_id, Status, Description, BiologicalProcesses)
+                     dplyr::select(Species,Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
+<br>
 
 #### Count shared and unique BUSCOs
 
@@ -219,7 +234,7 @@ count_buscos <- function(datfr, type){
            group_by(Status) %>%
            count(Status)) %>%
            mutate(Type = type) %>%
-           select(Type, everything())
+           dplyr::select(Type, everything())
 }
 
 
@@ -232,6 +247,7 @@ buscos_counts <- bind_rows(
                   
 ```
 
+<br>
 
 #### Plot shared and unique BUSCOs
 
@@ -242,7 +258,7 @@ buscos_counts %>%
   group_by(Type) %>%
   ggplot(aes(x = Status, y = n, fill = factor(Type))) +
   geom_bar(stat = "Identity", position = "dodge") +
-  scale_fill_grey(name = "Species",
+  scale_fill_brewer(palette = "Dark2", direction = -1, name = "Species",
                   labels = c("Shared BUSCOs","Unique - M.nigripes", "Unique - M.putorius furo")) +
   labs(title = "BUSCOs shared and unique for each ferret genome assembly",
        x = "BUSCO gene status", y = "Number of BUSCOs") +
@@ -259,8 +275,9 @@ ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 3
 
 ```
 
+<br>
 
-### Duplicated BUSCOs in both species
+#### Duplicated BUSCOs in both species
 
 ``` {r shared_busco_duplicates}
 
@@ -270,10 +287,11 @@ DF_duplicates <- ortho_match_DF %>% filter(Status == "Duplicated")
 
 # shared duplicates in both species, regardless of the exact number of duplicates in each sp
 shared_dups <- semi_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
-                  select(Busco_id, Status, Description, BiologicalProcesses)
+                  dplyr::select(Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
+<br>
 
 #### Unique duplicates in both species 
 
@@ -281,14 +299,15 @@ shared_dups <- semi_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
 
 # unique dups in BFF
 uniq_dups_BFF <- anti_join(BFF_duplicates, DF_duplicates, by = 'Busco_id') %>%
-                   select(Species, Busco_id, Status, Description, BiologicalProcesses)
+                   dplyr::select(Species, Busco_id, Status, Description, BiologicalProcesses)
 
 # unique dups in DF
 uniq_dups_DF <- anti_join(DF_duplicates, BFF_duplicates, by = 'Busco_id') %>%
-                  select(Species,Busco_id, Status, Description, BiologicalProcesses)
+                  dplyr::select(Species,Busco_id, Status, Description, BiologicalProcesses)
 
 ```
 
+<br>
 
 #### Count shared/unique duplicates 
 
@@ -300,7 +319,7 @@ count_dups <- function(datfr, type){
            group_by(Busco_id) %>%
            count(Busco_id)) %>%
            mutate(Type = type) %>%
-           select(Type, everything())
+           dplyr::select(Type, everything())
 }
 
 # count and bind shared and unique dups in one table
@@ -312,6 +331,8 @@ buscos_dups <- bind_rows(
 
 ```
 
+<br>
+
 #### Plot shared/unique duplicates 
 
 ``` {r plot_dups}
@@ -322,7 +343,7 @@ buscos_dups %>%
   summarise(dups_freq_sum = sum(n)) %>%    # sum of all dups for each type(shared/unique)
   ggplot(aes(x = Type, y = dups_freq_sum, fill = factor(Type))) +
   geom_bar(stat = "Identity", position = "dodge") +
-  scale_fill_grey(name = "Species",
+  scale_fill_brewer(palette = "Dark2", direction = -1, name = "Species",
                   labels = c("Shared duplicates","Unique - M.nigripes", "Unique - M.putorius furo")) +
   labs(title = "Shared and unique duplicated BUSCOs for each ferret genome assembly",
        x = "Type of duplicate", y = "Number of duplicates") +
@@ -339,6 +360,7 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 
 ```
 
+<br>
 
 #### Identifying shared/unique duplicated genes
 
@@ -347,13 +369,19 @@ ggsave("Ferrets_shared_uniq_dups_barplot.png", width = 16, height = 9, dpi = 300
 # check gene descriptions of dups
 # BiocManager::install("GO.db")
 
-# transform ferrets GO ids to terms = transform biol. processes col into list of GO terms
+# transform ferrets' GO ids to terms = transform biol. processes col into list of GO terms
 library(GO.db)
 
 # join rows from mamm..db9 to buscos_dups by matches in busco_id col
 GO_buscos_dups <- left_join(buscos_dups, mammalia_orthodb9, by = 'Busco_id') %>%
                    dplyr::select(-ProtMedianLength)  # drop col
-                  # explicitly called dplyr::select cause it's masked by other pkg's select fun
+
+# count NAs per col 
+GO_buscos_dups %>% is.na() %>% colSums()
+
+# filter out rows with NAs (missing GO IDs)
+# no_GO_IDs_dups <- GO_buscos_dups %>% filter_all(any_vars(is.na(.))) 
+
 
 # call GO.db fun to identify GO IDs
 # keys = GO IDs
@@ -361,35 +389,29 @@ GO_buscos_dups <- left_join(buscos_dups, mammalia_orthodb9, by = 'Busco_id') %>%
 test_keys <-head(keys(GO.db))
 select(GO.db, keys=test_keys, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
 
-split_processes <- GO_buscos_dups %>%
-  drop_na(BiologicalProcesses) %>%    # dropping rows with NAs in biol.processes
-  mutate_at(c("BiologicalProcesses"), function(processes) str_split(processes, ";"))  # transform string of GO IDs into chr vector
-        # mutate_at requires c() despite using only 1 var here
+# transform string of GO IDs into chr vector
+split_biol_processes <- GO_buscos_dups %>%
+                        drop_na(BiologicalProcesses) %>%    # dropping rows with NAs in biol.processes
+                        mutate_at(c("BiologicalProcesses"), function(processes) str_split(processes, ";"))  
+                        # mutate_at requires c() despite using only 1 var here
 
-unnested <- split_processes %>% 
-            unnest() %>% 
-            dplyr::rename(GOID = "BiologicalProcesses")
+# unnest the table - repeat the whole row for each GO ID per gene
+unnested_go_ids <- split_biol_processes %>% 
+                   unnest() %>% 
+                   dplyr::rename(GOID = "BiologicalProcesses")
 
-goterm_definitions <- select(GO.db, keys=unnested$GOID, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
+# search GO.db for the GO terms and definitions
+goterm_definitions <- select(GO.db, keys=unnested_go_ids$GOID, columns = c("TERM", "ONTOLOGY", "DEFINITION"))
 
-final_go_table <- left_join(unnested, goterm_definitions, by = "GOID") %>% distinct()
+# join Go.db results with previous busco info in a final df, 
+# watch out for duplicated rows due to repeated GOID for multiple genes - solved with 'distinct'
+final_go_table <- left_join(unnested_go_ids, goterm_definitions, by = "GOID") %>% distinct()
 
-
-#GO_def_added <- split_processes %>%
-#  mutate(go_db = select(GO.db, keys=split_processes$BiologicalProcesses, columns = c("TERM", "ONTOLOGY", "DEFINITION")))
-
-
-
-# count NAs per col 
-GO_buscos_dups %>% is.na() %>% colSums()
-
-# filter out rows with NAs (missing GO IDs)
-no_GO_IDs_dups <- GO_buscos_dups %>% filter_all(any_vars(is.na(.))) 
-
-
+glimpse(final_go_table)
 
 ```
 
+<br>
 
 #### Analysis of multiple duplicates
 
@@ -400,29 +422,34 @@ BFF_dup_more_than2_cp <- BFF_duplicates %>% group_by(Busco_id) %>% filter(n() > 
 DF_dup_more_than2_cp <- DF_duplicates %>% group_by(Busco_id) %>% filter(n() > 2)
 
 
-
 ```
 
-## replace geom_bar(stat=identity) with geom_col 
-## analyze duplicates - done
-## check shared/unique genes - GO terms
+<br>
 
-## analyze missing buscos
+#### To-do list
 
-## check proteinmedianlengths for fragmented and missing buscos
-# are these genes much larger and more complex than usual 'completed' gene
+``` {r to_do}
 
-## run new busco on cat,dog + ferrets
-## get GOs for cat,dog
-## compare with ferrets
+##### analyze duplicates - done
+##### check shared/unique genes - GO terms - done
 
-## bar plot results for each gene set for each sp together, shared/unique separately - package patchwork
+##### analyze missing buscos
+##### check proteinmedianlengths for fragmented and missing buscos
+##### are these genes much larger and more complex than usual 'completed' gene
 
-## fix plot colors:
+##### run new busco version on cat,dog + ferrets
+##### get GOs for cat,dog
+##### compare with ferrets
+
+##### bar plot results for each gene set for each sp together, shared/unique separately - pkg patchwork
+
+# replace geom_bar(stat=identity) with geom_col
+# fix plot colors:
 #  library(RColorBrewer)
 #  display.brewer.all()
 #  check theme_bw
 #  check theme_minimal
 #  theme(legend.position = "top")
-#  check fill parameter (does it need to be factored or is it by default)
+#  check fill parameter (is it a factor by default)
 
+```
