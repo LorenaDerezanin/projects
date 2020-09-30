@@ -1,5 +1,5 @@
 ---
-title: "Analysis of the BUSCO reports - ferrets"
+title: "Analysis of the BUSCO gene sets for mustelid species"
 author: "Lorena Derezanin"
 output: html_document
 ---
@@ -10,34 +10,72 @@ output: html_document
 
 <br>
 
-#### BUSCO version: 3.0.2
+#### BUSCO v.3.0.2
 #### lineage dataset: mammalia_odb9 (created on: 2016-02-13), number of species: 50, number of BUSCOs: 4104
 
-``` {r renv_init_load_pkgs}
-
-# initialize renv for a private pkg library and project reproducibility
-# renv::init()
-# renv::activate()
-
-# load packages
-library(BiocManager)
-options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
-# renv::install("GOSemSim")
-# renv::install("AnnotationForge")
-# library(GOSemSim)
-# library(AnnotationForge)
-
-library(data.table)
-library(tinytex)
-library(knitr)
-#renv::install("stringi")
-library(stringi)
-library(tidyverse)
-library(RColorBrewer)
+``` {r renv_init_load_pkgs include = FALSE}
+  
+  # set global options: messages/warnings not appearing in the final output
+  knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+  
+  # initialize renv for a private pkg library and project reproducibility
+  # renv::init()
+  renv::activate()
+  
+  # load packages
+  library(BiocManager)
+  options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
+  renv::install("UpSetR")
+  
+  library(data.table)
+  library(tinytex)
+  library(knitr)
+  #renv::install("stringi")
+  library(stringi)
+  library(UpSetR)
+  library(tidyverse)
+  library(RColorBrewer)
 
 ```
 
 <br>
+
+#### BUSCO v.4.0.6 and 4.1.2, Augustus 3.3.3
+#### lineage dataset: mammalia_odb10 (2019-11-20), number of species: 24, number of BUSCOs: 9226
+
+``` {r read busco tables for all species}
+
+# full_table_{sp}.tsv renamed after each species in local busco4_reports subdir > sp.tsv
+
+# declare function for reading in multiple files 
+read_and_add_species <- function(filepath) {
+  species = filepath %>% tools::file_path_sans_ext() %>% basename()  # get file name without parent dirs and extension
+  read.csv(filepath, sep = '\t', 
+           header = TRUE, 
+           fill = TRUE, 
+           colClasses = c(Sequence = "character"), 
+           skip = 2) %>%
+  mutate(Species = species) %>%   # create new col with species names from filename
+  dplyr::select(Species, everything()) # move new col in front of the other cols
+}
+  
+# list files in subdir
+# map_df - apply function to each element of the list and rbind dataframes in one table
+all_species <-
+            list.files(path = "./busco4_reports/",
+                       full.names = TRUE,
+                       pattern = "*.tsv") %>%
+            map_df(~read_and_add_species(.)) %>%
+            dplyr::rename(Busco_id = "X..Busco.id") 
+
+
+
+
+
+```
+
+
+
 
 #### Read in data tables
 
@@ -274,6 +312,21 @@ buscos_counts %>%
 ggsave("Ferrets_shared_uniq_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)  
 
 ```
+
+``` {r upset_plot test}
+
+# plot shared/unique counts as upset bar plot
+
+complete_shared 
+
+upset(buscos_counts, sets = c("M.nigripes", "M.putorius furo"), sets.bar.color = "#56B4E9",
+order.by = "freq", empty.intersections = "on")
+
+
+
+```
+
+
 
 <br>
 
