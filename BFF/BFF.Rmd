@@ -68,10 +68,7 @@ all_species <-
             map_df(~read_and_add_species(.)) %>%
             dplyr::rename(Busco_id = "X..Busco.id") 
 
-
-
-
-
+summary(all_species)
 ```
 
 
@@ -104,6 +101,36 @@ full_table_DF <- as.data.frame(fread(file_DF, sep = '\t', header = TRUE, fill = 
 <br>
 
 #### Plot number of BUSCOs for each species
+
+```{r count genes and plot}
+
+# count BUSCOs per species and plot it
+
+# get unique sp. names from the whole table
+species_names <- distinct(all_species, Species)
+
+all_species %>%
+  group_by(Species) %>%
+  count(Status) %>%
+  ggplot(aes(x = Status, y = n, fill = factor(Species))) +
+    geom_bar(stat = "identity", position = "dodge") +
+    scale_fill_brewer(palette = "Dark2", direction = -1, name = "Species",
+              labels = species_names +
+    labs(title = "BUSCOs found in all species",
+         x = "BUSCO gene status", y = "Number of BUSCOs") +
+    theme_light() +
+    theme(axis.title.x = element_text(size = 12, vjust = -0.90),
+          axis.title.y = element_text(size = 12, vjust = 1.90),
+          legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
+    theme(plot.title = element_text(size = 14,
+          margin = margin(0, 0, 6, 0)))
+
+# save barplot
+ggsave("All_species_BUSCOs_barplot.png", width = 16, height = 9, dpi = 300)
+    
+```
+
+
 
 ``` {r count_genes_and_plot}
 

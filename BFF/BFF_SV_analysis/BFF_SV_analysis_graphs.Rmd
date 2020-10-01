@@ -1,0 +1,117 @@
+---
+title: "BFF_SV_analysis"
+author: "Lorena Derezanin"
+date: "9/21/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
+# initialize renv for a private pkg library and project reproducibility
+#renv::init()
+#renv::activate()
+
+# load packages
+install.packages("BiocManager")
+library(BiocManager)
+options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
+
+renv::install("tidyverse")
+renv::install("data.table")
+renv::install("RColorBrewer")
+renv::install("VennDiagram")
+renv::install("UpSetR")
+#renv::install("stringi")
+
+library(data.table)
+library(tinytex)
+library(knitr)
+library(stringi)
+library(UpSetR)
+library(tidyverse)
+library(RColorBrewer)
+library(VennDiagram)
+
+```
+
+
+
+```{r plot BFF Manta_Wham_Lumpy overlaps}
+
+# load overlap table for BFF individuals
+bff_survivor_matrix <- read.table("BFFs_manta_wham_lumpy_overlap.txt")
+colnames(bff_survivor_matrix) <- c("BFF_REF","SB8055","SB7462") 
+diagram_colors <- brewer.pal(3, "Set1")
+
+venn.diagram(
+        list(
+          BFF_REF=which(bff_survivor_matrix[,1]==1), 
+          SB8055=which(bff_survivor_matrix[,2]==1), 
+          SB7462=which(bff_survivor_matrix[,3]==1)
+        ), 
+        # colors, lines
+        fill = diagram_colors, 
+        lwd = 2, 
+        lty ='blank', 
+        alpha = c(0.5, 0.5, 0.5), 
+        # numbers
+        cex = 0.7, 
+        fontface = "bold",  
+        fontfamily = "sans",
+        # category names
+        cat.cex = 0.7,
+        cat.fontface = "bold",
+        cat.default.pos = "outer",
+        cat.pos = c(-20, 20, 125),
+        cat.dist = c(0.055, 0.055, 0.075),
+        cat.fontfamily = "sans",
+        rotation = 1,
+        # output features
+        imagetype="png" ,
+        height = 750 , 
+        width = 750 , 
+        resolution = 300,
+        compression = "lzw",
+        filename = "BFFs_overlapp.png"
+)
+
+
+```
+
+```{r upset plot BFF and Eu.polecat SVs, echo=FALSE}
+
+
+png(file = "UpSetR_mustelids_noBND.png", width = 400, height = 200)
+
+survivor_matrix <- read.table("mustelids_manta_wham_lumpy_overlap.txt")
+mantaIDs <- read.csv("SV_MantaIDs_no_BND.txt", header = F)
+colnames(survivor_matrix) <- c("FZTDU","DU6","DUC","DU6P","DUhLB","DUK") 
+                            
+survivor_matrix_all_cols <- survivor_matrix %>% mutate(SV_MantaIDs = mantaIDs) %>% select(SV_MantaIDs, everything())
+
+upset(survivor_matrix_all_cols, nsets = 6, nintersects = 30, mb.ratio = c(0.45, 0.55), matrix.color = "red", sets.bar.color = "#56B4E9", order.by = "freq", keep.order = FALSE, set_size.show = TRUE, text.scale = 1.0, point.size = 2.5, line.size = 1)
+
+dev.off()
+
+```
+
+
+
+
+```{r upset plot mice, echo=FALSE}
+
+png(file = "UpSetR_mice_line_noBND.png", width = 400, height = 200)
+
+survivor_matrix <- read.table("survivor_merged_overlap.txt")
+mantaIDs <- read.csv("SV_MantaIDs_no_BND.txt", header = F)
+colnames(survivor_matrix) <- c("FZTDU","DU6","DUC","DU6P","DUhLB","DUK") 
+                            
+survivor_matrix_all_cols <- survivor_matrix %>% mutate(SV_MantaIDs = mantaIDs) %>% select(SV_MantaIDs, everything())
+
+upset(survivor_matrix_all_cols, nsets = 6, nintersects = 30, mb.ratio = c(0.45, 0.55), matrix.color = "red", sets.bar.color = "#56B4E9", order.by = "freq", keep.order = FALSE, set_size.show = TRUE, text.scale = 1.0, point.size = 2.5, line.size = 1)
+
+dev.off()
+```
+
+
