@@ -63,8 +63,8 @@ colnames(survivor_matrix) <- c("BFF_REF","SB8055","SB7462","EU_POLECAT")
 upset(
       survivor_matrix, 
       nsets = 4, nintersects = 16, 
-      mb.ratio = c(0.7, 0.3), matrix.color = "red", 
-      sets.bar.color = "#56B4E9", order.by = "freq", 
+      mb.ratio = c(0.7, 0.3), matrix.color = "brown1", 
+      sets.bar.color = "cornflowerblue", order.by = "freq", 
       keep.order = FALSE, set_size.show = F, 
       text.scale = 1.0, point.size = 2.5, line.size = 1,
       
@@ -117,6 +117,7 @@ png(file = "BFF_shared_SVs.png", width = 1000, height = 800, res = 200)
 
 bff_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
+      # to keep dataframe order instead of alphabetical, refactor col
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
             scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1"), name = "SV type") +
@@ -129,7 +130,7 @@ bff_chr_ordered_long %>%
             theme(plot.title = element_text(size = 12,
                   margin = margin(0, 0, 6, 0))) +
             # facet_grid(. ~ SV_type, scales= "free") +
-            facet_wrap(. ~ SV_type, ncol=1, scales= "free") 
+            facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
 
 dev.off()  
 
@@ -167,10 +168,11 @@ png(file = "eu_polecat_SVs.png", width = 1100, height = 950, res = 200)
 eu_polecat_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
         mutate(SV_type = factor(SV_type, levels = unique(SV_type))) %>%
+        # to keep dataframe order instead of alphabetical, refactor cols
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
             scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3"), name = "SV type") +
-            labs(title = "M. putorius SV distribution on chromosomes",
+            labs(title = "European polecat SV distribution on chromosomes",
                  x = "Chromosomes", y = "Number of SVs") +
             theme_light() +
             theme(axis.title.x = element_text(size = 10, vjust = -0.90),
@@ -179,7 +181,7 @@ eu_polecat_chr_ordered_long %>%
             theme(plot.title = element_text(size = 12,
                   margin = margin(0, 0, 6, 0))) +
             # facet_grid(. ~ SV_type, scales= "free") +
-            facet_wrap(. ~ SV_type, ncol=1, scales= "free") 
+            facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case
 
 dev.off()  
 
@@ -188,18 +190,93 @@ dev.off()
 
 ### SV size distribution ###
 
-```{r size bins for each SV}
+```{r size bins for each SV type}
+
+# prep stats on SV sizes in BFFs
+
+bff_sv_size_distro <- read.table("input_data/BFFs_shared_SVs.stats", header = T) %>%
+                      select(-INS, -TRA, -UNK) %>%
+                      slice(-1) %>% # remove 1st row
+                      rename_all(toupper) %>%
+                      pivot_longer(!LEN, names_to = "SV_type", values_to = "Count") 
+                      # extend table into longer format 
+```
 
 
 
+```{r plot SV size distro}
+
+png(file = "BFF_SV_size_distro.png", width = 1000, height = 800, res = 200)
+
+bff_sv_size_distro %>%
+        mutate(LEN = factor(LEN, levels = unique(LEN))) %>%
+        ggplot(aes(x = factor(LEN), y = Count , fill = factor(SV_type))) +
+            geom_bar(stat = "identity", position = "dodge") +
+            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1"), name = "SV type") +
+            labs(title = "SV size distribution in black-footed ferrets",
+                 x = "SV size bins", y = "Number of SVs") +
+            theme_light() +
+            theme(axis.title.x = element_text(size = 10, vjust = -0.90),
+                  axis.title.y = element_text(size = 10, vjust = 1.90),
+                  legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
+            theme(plot.title = element_text(size = 12,
+                  margin = margin(0, 0, 6, 0))) #+
+            # facet_grid(. ~ SV_type, scales= "free") +
+            #facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
+
+dev.off()  
+
+```
+
+```{r size bins for each SV type}
+# prep stats on SV sizes in Eu.polecat
+
+eu_polecat_sv_size_distro <- read.table("input_data/eu_polecat_only_SVs.stats", header = T) %>%
+                      select(-TRA, -UNK) %>%
+                      slice(-1) %>% # remove 1st row
+                      rename_all(toupper) %>%
+                      pivot_longer(!LEN, names_to = "SV_type", values_to = "Count") 
+                      # extend table into longer format 
+```
+
+
+
+```{r plot SV size distro}
+
+png(file = "eu_polecat_SV_size_distro.png", width = 1000, height = 800, res = 200)
+
+eu_polecat_sv_size_distro %>%
+        mutate(LEN = factor(LEN, levels = unique(LEN))) %>%
+        mutate(SV_type = factor(SV_type, levels = unique(SV_type))) %>%
+        ggplot(aes(x = factor(LEN), y = Count , fill = factor(SV_type))) +
+            geom_bar(stat = "identity", position = "dodge") +
+            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3"), name = "SV type") +
+            labs(title = "SV size distribution in European polecat",
+                 x = "SV size bins", y = "Number of SVs") +
+            theme_light() +
+            theme(axis.title.x = element_text(size = 10, vjust = -0.90),
+                  axis.title.y = element_text(size = 10, vjust = 1.90),
+                  legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
+            theme(plot.title = element_text(size = 12,
+                  margin = margin(0, 0, 6, 0))) #+
+            # facet_grid(. ~ SV_type, scales= "free") +
+            #facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
+
+dev.off()  
 
 ```
 
 
 
 
+### Manhatan plot for each SV type along chromosomes for each individual
 
-### Overlap of detected SVs among all 3 BFF individuals
+
+
+
+
+
+### Overlap of detected SVs among all 3 BFF individuals ###
 
 ```{r Venn diagram BFF Manta_Wham_Lumpy SV overlaps}
 
@@ -242,5 +319,13 @@ venn.diagram(
 
 
 ```
+
+
+### Insert size distribution for each individual ###
+
+
+### Coverage distibution along chromosomes for each individual ###
+
+
 
 
