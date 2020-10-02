@@ -7,5 +7,6 @@ BFF/busco_reports/
 BFF/busco4_reports/
 BFF/BFF_SV_analysis/input_data/
 BFF/BFF_SV_analysis/*.png
+BFF/BFF_SV_analysis/*.log
 mammalia_40674_OrthoDB9_orthogroup_info.txt
 

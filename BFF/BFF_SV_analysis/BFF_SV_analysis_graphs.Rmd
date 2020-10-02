@@ -17,14 +17,14 @@ install.packages("BiocManager")
 library(BiocManager)
 options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
 
-renv::install("tidyverse")
-renv::install("data.table")
-renv::install("RColorBrewer")
-renv::install("VennDiagram")
-renv::install("UpSetR")
-renv::install("patchwork")
-renv::install("viridis")
-renv::install("wesanderson")
+# renv::install("tidyverse")
+# renv::install("data.table")
+# renv::install("RColorBrewer")
+# renv::install("VennDiagram")
+# renv::install("UpSetR")
+# renv::install("patchwork")
+# renv::install("viridis")
+# renv::install("wesanderson")
 
 
 #renv::install("stringi")
@@ -46,55 +46,15 @@ library(wesanderson)
 
 
 
-```{r Venn diagram BFF Manta_Wham_Lumpy SV overlaps}
-
-# load overlap table for BFF individuals
-bff_survivor_matrix <- read.table("BFFs_manta_wham_lumpy_overlap.txt")
-colnames(bff_survivor_matrix) <- c("BFF_REF","SB8055","SB7462") 
-diagram_colors <- brewer.pal(3, "Set1")
-
-venn.diagram(
-        list(
-          BFF_REF=which(bff_survivor_matrix[,1]==1), 
-          SB8055=which(bff_survivor_matrix[,2]==1), 
-          SB7462=which(bff_survivor_matrix[,3]==1)
-        ), 
-        # colors, lines
-        fill = diagram_colors, 
-        lwd = 2, 
-        lty ='blank', 
-        alpha = c(0.5, 0.5, 0.5), 
-        # numbers
-        cex = 0.7, 
-        fontface = "bold",  
-        fontfamily = "sans",
-        # category names
-        cat.cex = 0.7,
-        cat.fontface = "bold",
-        cat.default.pos = "outer",
-        cat.pos = c(-20, 20, 125),
-        cat.dist = c(0.055, 0.055, 0.075),
-        cat.fontfamily = "sans",
-        rotation = 1,
-        # output features
-        imagetype="png" ,
-        height = 750 , 
-        width = 750 , 
-        resolution = 300,
-        compression = "lzw",
-        filename = "BFFs_overlap.png"
-)
-
-
-```
+### Shared and private SVs in all species ###
 
 ```{r upset plot BFF and Eu.polecat SVs, echo=FALSE}
 
 
 png(file = "UpSetR_mustelids_noBND.png", width = 1800, height = 1500, res = 300)
 
-survivor_matrix <- read.table("mustelids_manta_wham_lumpy_overlap.txt")
-SV_info <- read.csv("mustelids_manta_wham_lumpy_SV_info.txt", header = F, sep = "\t")
+survivor_matrix <- read.table("input_data/mustelids_manta_wham_lumpy_overlap.txt")
+SV_info <- read.csv("input_data/mustelids_manta_wham_lumpy_SV_info.txt", header = F, sep = "\t")
 colnames(survivor_matrix) <- c("BFF_REF","SB8055","SB7462","EU_POLECAT") 
                            
 
@@ -105,7 +65,7 @@ upset(
       nsets = 4, nintersects = 16, 
       mb.ratio = c(0.7, 0.3), matrix.color = "red", 
       sets.bar.color = "#56B4E9", order.by = "freq", 
-      keep.order = FALSE, set_size.show = TRUE, 
+      keep.order = FALSE, set_size.show = F, 
       text.scale = 1.0, point.size = 2.5, line.size = 1,
       
       )
@@ -115,21 +75,24 @@ dev.off()
 ```
 
 
+### Distribution of SVs along reference chromosomes ###
+
 ```{r SV distribution on chromosomes}
 
 # import list of ordered dom. fer reference chromosomes
-ordered_scf_dom_fer <- read.table("scf_list.tsv") %>% 
+ordered_scf_dom_fer <- read.table("input_data/scf_list.tsv") %>% 
                        rename(Scaffolds = "V1") %>%
                        mutate(Chromosomes = c(seq(1:19),"X")) %>%
                        select(Chromosomes, everything())
 
 ```
 
-
+#### BFFs ####
 
 ```{r prep BFF stats}
+
 # BFF shared SVs per chromosome stats
-bff_chr_sv_distro <- read.table("BFFs_shared_SVs.stats_CHR", header = T) %>%
+bff_chr_sv_distro <- read.table("input_data/BFFs_shared_SVs.stats_CHR", header = T) %>%
                      select(.,-TRA) %>%
                      rename(Scaffolds = "Chr")
 
@@ -138,7 +101,6 @@ bff_chr_ordered <- left_join(ordered_scf_dom_fer, bff_chr_sv_distro, by = "Scaff
 
 
 ```
-
 
 
 
@@ -174,11 +136,12 @@ dev.off()
 
 ```
 
+#### European polecat ####
 
 ```{r prep Eu_polecat stats}
 
 # Eu. polecat
-eu_polecat_chr_sv_distro <- read.table("eu_polecat_only_SVs.stats_CHR", header = T) %>%
+eu_polecat_chr_sv_distro <- read.table("input_data/eu_polecat_only_SVs.stats_CHR", header = T) %>%
                      select(.,-TRA) %>%
                      rename(Scaffolds = "Chr")
 
@@ -222,3 +185,62 @@ dev.off()
 
 
 ```
+
+### SV size distribution ###
+
+```{r size bins for each SV}
+
+
+
+
+```
+
+
+
+
+
+### Overlap of detected SVs among all 3 BFF individuals
+
+```{r Venn diagram BFF Manta_Wham_Lumpy SV overlaps}
+
+# load overlap table for BFF individuals
+bff_survivor_matrix <- read.table("input_data/BFFs_manta_wham_lumpy_overlap.txt")
+colnames(bff_survivor_matrix) <- c("BFF_REF","SB8055","SB7462") 
+diagram_colors <- brewer.pal(3, "Set1")
+
+venn.diagram(
+        list(
+          BFF_REF=which(bff_survivor_matrix[,1]==1), 
+          SB8055=which(bff_survivor_matrix[,2]==1), 
+          SB7462=which(bff_survivor_matrix[,3]==1)
+        ), 
+        # colors, lines
+        fill = diagram_colors, 
+        lwd = 2, 
+        lty ='blank', 
+        alpha = c(0.5, 0.5, 0.5), 
+        # numbers
+        cex = 0.7, 
+        fontface = "bold",  
+        fontfamily = "sans",
+        # category names
+        cat.cex = 0.7,
+        cat.fontface = "bold",
+        cat.default.pos = "outer",
+        cat.pos = c(-20, 20, 125),
+        cat.dist = c(0.055, 0.055, 0.075),
+        cat.fontfamily = "sans",
+        rotation = 1,
+        # output features
+        imagetype="png" ,
+        height = 750 , 
+        width = 750 , 
+        resolution = 300,
+        compression = "lzw",
+        filename = "BFFs_overlap.png"
+)
+
+
+```
+
+
