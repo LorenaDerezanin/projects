@@ -113,7 +113,7 @@ bff_chr_ordered_long <- bff_chr_ordered %>%
         # extend table into longer format (transpose SV types per Chr)
  
 # plot SV distro on chr
-png(file = "BFF_shared_SVs.png", width = 1000, height = 800, res = 200)
+png(file = "BFF_shared_SVs_CHR.png", width = 1000, height = 800, res = 200)
 
 bff_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
@@ -121,9 +121,9 @@ bff_chr_ordered_long %>%
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
             scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1"), name = "SV type") +
-            labs(title = "Shared SV distribution on chromosomes",
+            labs(title = "Distribution of SVs shared among all BFF individuals",
                  x = "Chromosomes", y = "Number of SVs") +
-            theme_light() +
+            theme_minimal() +
             theme(axis.title.x = element_text(size = 10, vjust = -0.90),
                   axis.title.y = element_text(size = 10, vjust = 1.90),
                   legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
@@ -163,7 +163,7 @@ eu_polecat_chr_ordered_long <- eu_polecat_chr_ordered %>%
         # extend table into longer format (transpose SV types per Chr)
  
 # plot SV distro on chr
-png(file = "eu_polecat_SVs.png", width = 1100, height = 950, res = 200)
+png(file = "eu_polecat_SVs_CHR.png", width = 1100, height = 950, res = 200)
 
 eu_polecat_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
@@ -172,9 +172,9 @@ eu_polecat_chr_ordered_long %>%
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
             scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3"), name = "SV type") +
-            labs(title = "European polecat SV distribution on chromosomes",
+            labs(title = "Distribution of SVs in European polecat",
                  x = "Chromosomes", y = "Number of SVs") +
-            theme_light() +
+            theme_minimal() +
             theme(axis.title.x = element_text(size = 10, vjust = -0.90),
                   axis.title.y = element_text(size = 10, vjust = 1.90),
                   legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
@@ -260,7 +260,7 @@ eu_polecat_sv_size_distro %>%
             theme(plot.title = element_text(size = 12,
                   margin = margin(0, 0, 6, 0))) #+
             # facet_grid(. ~ SV_type, scales= "free") +
-            #facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
+            # facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
 
 dev.off()  
 
