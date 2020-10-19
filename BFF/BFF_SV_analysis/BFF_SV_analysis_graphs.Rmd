@@ -13,7 +13,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 #renv::activate()
 
 # load packages
-install.packages("BiocManager")
+# install.packages("BiocManager")
 library(BiocManager)
 options(repos = BiocManager::repositories()) # Bioconductor repo added to renv
 
@@ -51,10 +51,10 @@ library(wesanderson)
 ```{r upset plot BFF and Eu.polecat SVs, echo=FALSE}
 
 
-png(file = "UpSetR_mustelids_noBND.png", width = 1800, height = 1500, res = 300)
+png(file = "UpSetR_mustelids_noNs.png", width = 1800, height = 1500, res = 300)
 
-survivor_matrix <- read.table("input_data/mustelids_manta_wham_lumpy_overlap.txt")
-SV_info <- read.csv("input_data/mustelids_manta_wham_lumpy_SV_info.txt", header = F, sep = "\t")
+survivor_matrix <- read.table("input_data/mustelids_lumpy_manta_wham_noNs_overlap.txt")
+# SV_info <- read.csv("input_data/", header = F, sep = "\t")
 colnames(survivor_matrix) <- c("BFF_REF","SB8055","SB7462","EU_POLECAT") 
                            
 
@@ -93,7 +93,7 @@ ordered_scf_dom_fer <- read.table("input_data/scf_list.tsv") %>%
 
 # BFF shared SVs per chromosome stats
 bff_chr_sv_distro <- read.table("input_data/BFFs_shared_SVs.stats_CHR", header = T) %>%
-                     select(.,-TRA) %>%
+                     #select(.,-TRA) %>%
                      rename(Scaffolds = "Chr")
 
 bff_chr_ordered <- left_join(ordered_scf_dom_fer, bff_chr_sv_distro, by = "Scaffolds") %>%
@@ -113,14 +113,14 @@ bff_chr_ordered_long <- bff_chr_ordered %>%
         # extend table into longer format (transpose SV types per Chr)
  
 # plot SV distro on chr
-png(file = "BFF_shared_SVs_CHR.png", width = 1000, height = 800, res = 200)
+png(file = "BFF_shared_SVs_CHR.png", width = 1000, height = 1000, res = 200)
 
 bff_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
       # to keep dataframe order instead of alphabetical, refactor col
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
-            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1"), name = "SV type") +
+            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkorchid4"), name = "SV type") +
             labs(title = "Distribution of SVs shared among all BFF individuals",
                  x = "Chromosomes", y = "Number of SVs") +
             theme_minimal() +
@@ -143,7 +143,7 @@ dev.off()
 
 # Eu. polecat
 eu_polecat_chr_sv_distro <- read.table("input_data/eu_polecat_only_SVs.stats_CHR", header = T) %>%
-                     select(.,-TRA) %>%
+                     #select(.,-TRA) %>%
                      rename(Scaffolds = "Chr")
 
 
@@ -163,7 +163,7 @@ eu_polecat_chr_ordered_long <- eu_polecat_chr_ordered %>%
         # extend table into longer format (transpose SV types per Chr)
  
 # plot SV distro on chr
-png(file = "eu_polecat_SVs_CHR.png", width = 1100, height = 950, res = 200)
+png(file = "eu_polecat_SVs_CHR.png", width = 1000, height = 1200, res = 200)
 
 eu_polecat_chr_ordered_long %>%
         mutate(Chromosomes = factor(Chromosomes, levels = unique(Chromosomes))) %>%
@@ -171,7 +171,7 @@ eu_polecat_chr_ordered_long %>%
         # to keep dataframe order instead of alphabetical, refactor cols
         ggplot(aes(x = factor(Chromosomes), y = Count , fill = factor(SV_type))) +
             geom_bar(stat = "identity", position = "dodge") +
-            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3"), name = "SV type") +
+            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3", "darkorchid4"), name = "SV type") +
             labs(title = "Distribution of SVs in European polecat",
                  x = "Chromosomes", y = "Number of SVs") +
             theme_minimal() +
@@ -189,6 +189,58 @@ dev.off()
 ```
 
 ### SV size distribution ###
+
+```{r SV size bins for each SV type - all samples}
+
+all_samples_sv_size_distro <- read.table("input_data/mustelids_lumpy_manta_wham_noNs.stats", header = T) %>%
+                              select(-TRA, -UNK) %>%
+                              slice(-1) %>% # remove 1st row
+                              rename_all(toupper) %>%
+                              pivot_longer(!LEN, names_to = "SV_type", values_to = "Count") 
+                              # extend table into longer format 
+
+```
+
+```{r plot size bins for all species}
+
+
+png(file = "all_samples_SV_size_distro.png", width = 1000, height = 800, res = 200)
+
+all_samples_sv_size_distro %>%
+        mutate(SV_type = factor(SV_type, levels = unique(SV_type))) %>%
+        # to keep dataframe order instead of alphabetical, refactor cols
+        mutate(LEN = factor(LEN, levels = unique(LEN))) %>%
+        ggplot(aes(x = factor(LEN), y = Count , fill = factor(SV_type))) +
+            geom_bar(stat = "identity", position = "dodge") +
+            scale_fill_manual(values = c("cornflowerblue", "brown1", "darkgoldenrod1", "darkolivegreen3"), name = "SV type") +
+            labs(title = "SV size distribution in all samples",
+                 x = "SV size bins", y = "Number of SVs") +
+            theme_light() +
+            theme(axis.title.x = element_text(size = 10, vjust = -0.90),
+                  axis.title.y = element_text(size = 10, vjust = 1.90),
+                  legend.margin = margin(0.5, 0.5, 0.5,0.5)) +
+            theme(plot.title = element_text(size = 12,
+                  margin = margin(0, 0, 6, 0))) +
+                  expand_limits(y=c(0, 3500))
+                  #expand_limits(x = 0, y = 0)
+
+#+
+            # facet_grid(. ~ SV_type, scales= "free") +
+            #facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
+# set the intercept of x and y axis at (0,0)
+p + expand_limits(x = 0, y = 0)
+
+# change the axis limits
+p + expand_limits(x=c(0,30), y=c(0, 150))
+
+
+dev.off()  
+
+
+
+```
+
+# BFFs
 
 ```{r size bins for each SV type}
 
@@ -227,6 +279,9 @@ bff_sv_size_distro %>%
 dev.off()  
 
 ```
+
+
+# Eu.polecat
 
 ```{r size bins for each SV type}
 # prep stats on SV sizes in Eu.polecat
@@ -270,9 +325,6 @@ dev.off()
 
 
 ### Manhatan plot for each SV type along chromosomes for each individual
-
-
-
 
 
 
@@ -321,10 +373,10 @@ venn.diagram(
 ```
 
 
-### Insert size distribution for each individual ###
+### Insert size distribution for each individual - done
 
 
-### Coverage distibution along chromosomes for each individual ###
+### Coverage distibution along chromosomes for each individual 
 
 
 
