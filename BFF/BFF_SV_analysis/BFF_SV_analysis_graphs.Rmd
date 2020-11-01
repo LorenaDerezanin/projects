@@ -224,14 +224,13 @@ all_samples_sv_size_distro %>%
                   expand_limits(y=c(0, 3500))
                   #expand_limits(x = 0, y = 0)
 
-#+
             # facet_grid(. ~ SV_type, scales= "free") +
             #facet_wrap(. ~ SV_type, ncol=1, scales= "free") # allow diff. scales in plot, y-axis in this case 
 # set the intercept of x and y axis at (0,0)
-p + expand_limits(x = 0, y = 0)
-
-# change the axis limits
-p + expand_limits(x=c(0,30), y=c(0, 150))
+# p + expand_limits(x = 0, y = 0)
+# 
+# # change the axis limits
+# p + expand_limits(x=c(0,30), y=c(0, 150))
 
 
 dev.off()  
@@ -373,11 +372,36 @@ venn.diagram(
 ```
 
 
-### Insert size distribution for each individual - done
+```{r BFF SVs vs. gene count}
+
+install.packages("chromoMap")
+library("chromoMap")
 
 
-### Coverage distibution along chromosomes for each individual 
+png
+
+BFF_gene_count <- read.table("input_data/BFF_shared_SVs_gene_count.csv", header = T, sep = ",") 
+                 
+                  
+# prep chromosome coordinates
+chr_elements <-  select(BFF_gene_count, Chr, Chr_start, Chr_end) %>% 
+                 unique() %>%
+                 arrange(Chr) 
+
+write.table(chr_elements, "input_data/Chr_elements.txt", sep = "\t", col.names = F, row.names = F)             
 
 
 
+# prep SV coordinates
+SV_elements <- select(BFF_gene_count, SV_type, Chr, SV_start, SV_end) 
 
+write.table(SV_elements, "input_data/SV_elements.txt", sep = "\t", col.names = F, row.names = F) 
+
+
+
+chromoMap("input_data/Chr_elements.txt","input_data/SV_elements.txt", segment_annotation = T)
+
+# dev.off()  
+
+
+```
