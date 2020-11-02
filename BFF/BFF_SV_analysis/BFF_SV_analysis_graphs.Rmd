@@ -372,14 +372,15 @@ venn.diagram(
 ```
 
 
-```{r BFF SVs vs. gene count}
+```{r BFF SVs plotted on chromosomes}
 
-install.packages("chromoMap")
-library("chromoMap")
+# install.packages("chromoMap")
+# library("chromoMap")
 
 
-png
+png(file = "BFF_SV_chromoMap.png", width = 1000, height = 800, res = 200)
 
+# load data
 BFF_gene_count <- read.table("input_data/BFF_shared_SVs_gene_count.csv", header = T, sep = ",") 
                  
                   
@@ -391,17 +392,77 @@ chr_elements <-  select(BFF_gene_count, Chr, Chr_start, Chr_end) %>%
 write.table(chr_elements, "input_data/Chr_elements.txt", sep = "\t", col.names = F, row.names = F)             
 
 
-
 # prep SV coordinates
-SV_elements <- select(BFF_gene_count, SV_type, Chr, SV_start, SV_end) 
+SV_elements <- select(BFF_gene_count, SV_type, Chr, SV_start, SV_end, Group) 
 
 write.table(SV_elements, "input_data/SV_elements.txt", sep = "\t", col.names = F, row.names = F) 
 
 
 
-chromoMap("input_data/Chr_elements.txt","input_data/SV_elements.txt", segment_annotation = T)
+chromoMap("input_data/Chr_elements.txt","input_data/SV_elements.txt", 
+          segment_annotation = T,
+          data_based_color_map = T,
+          data_type = "categorical",
+          data_colors = list(c("cornflowerblue", "red", "orange")),
+          legend = T,
+          lg_x = 220,
+          lg_y = 250,
+          chr_color = c("black"),
+          chr_width = 8,
+          chr_length = 5,
+          ch_gap = 6,
+          top_margin = 45,
+          left_margin = 35,
+          canvas_width = 800)
 
-# dev.off()  
+
+dev.off()  
 
 
 ```
+
+
+
+
+```{r gene count per SV plot}
+
+png(file = "BFF_SV_gene_counts_chromoMap.png", width = 1000, height = 800, res = 200)
+
+
+# prep SV annotations
+SV_genes <- select(BFF_gene_count, SV_type, Chr, SV_start, SV_end, No_of_genes)
+          
+
+write.table(SV_genes, "input_data/SV_gene_counts.txt", sep = "\t", col.names = F, row.names = F) 
+
+
+chromoMap("input_data/Chr_elements.txt","input_data/SV_gene_counts.txt",
+          segment_annotation = T,
+          data_based_color_map = T,
+          data_colors = list(c("lightgrey", "brown")),
+          data_type = "numeric",
+          legend = T,
+          lg_x = 220,
+          lg_y = 250,
+          chr_width = 8,
+          chr_length = 5,
+          ch_gap = 6,
+          top_margin = 45,
+          left_margin = 35,
+          canvas_width = 800)
+
+dev.off()  
+
+```
+
+
+
+```{r patchwork}
+
+# plot 2 chromomaps one next to the other
+
+
+```
+
+
+
