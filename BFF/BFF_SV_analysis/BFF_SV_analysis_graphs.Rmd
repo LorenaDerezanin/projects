@@ -322,11 +322,6 @@ dev.off()
 
 
 
-
-### Manhatan plot for each SV type along chromosomes for each individual
-
-
-
 ### Overlap of detected SVs among all 3 BFF individuals ###
 
 ```{r Venn diagram BFF Manta_Wham_Lumpy SV overlaps}
@@ -375,7 +370,7 @@ venn.diagram(
 ```{r BFF SVs plotted on chromosomes}
 
 # install.packages("chromoMap")
-# library("chromoMap")
+ library("chromoMap")
 
 
 png(file = "BFF_SV_chromoMap.png", width = 1000, height = 800, res = 200)
@@ -411,9 +406,10 @@ chromoMap("input_data/Chr_elements.txt","input_data/SV_elements.txt",
           chr_width = 8,
           chr_length = 5,
           ch_gap = 6,
-          top_margin = 45,
+          top_margin = 55,
           left_margin = 35,
-          canvas_width = 800)
+          canvas_width = 800,
+          title = "BFF-shared SVs overlapping protein-coding regions")
 
 
 dev.off()  
@@ -439,7 +435,8 @@ write.table(SV_genes, "input_data/SV_gene_counts.txt", sep = "\t", col.names = F
 chromoMap("input_data/Chr_elements.txt","input_data/SV_gene_counts.txt",
           segment_annotation = T,
           data_based_color_map = T,
-          data_colors = list(c("lightgrey", "brown")),
+          data_colors = list(c("lightgreen", "darkviolet")),
+          chr_color = c("black"),
           data_type = "numeric",
           legend = T,
           lg_x = 220,
@@ -447,9 +444,10 @@ chromoMap("input_data/Chr_elements.txt","input_data/SV_gene_counts.txt",
           chr_width = 8,
           chr_length = 5,
           ch_gap = 6,
-          top_margin = 45,
+          top_margin = 55,
           left_margin = 35,
-          canvas_width = 800)
+          canvas_width = 800,
+          title = "BFF-shared gene density overlapped by SVs")
 
 dev.off()  
 
@@ -461,8 +459,6 @@ dev.off()
 
 # plot 2 chromomaps one next to the other
 
+# plot the same for eu.polecat
 
 ```
-
-
-
